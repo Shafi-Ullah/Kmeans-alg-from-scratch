@@ -2,7 +2,7 @@ import numpy as np
 
 
 class KMeans:
-    def __init__(self, n_cluster=8, max_iter=300, init="random", n_init=1):
+    def __init__(self, n_cluster=8, max_iter=300, init="random", n_init=10):
 
         self.n_cluster = n_cluster
         self.max_iter = max_iter
@@ -27,7 +27,7 @@ class KMeans:
                 self.inertia_ = inertia
                 self.centroids = centroids
 
-    def assign_clusters(self, X, centroids):
+    def _assign_clusters(self, X, centroids):
         cluster_group = []
         distances = []
         for row in X:
@@ -39,7 +39,7 @@ class KMeans:
             distances.clear()
         return np.array(cluster_group)
 
-    def move_centroids(self, X, cluster_group):
+    def _move_centroids(self, X, cluster_group):
         new_centroids = []
         cluster_type = np.unique(cluster_group)
 
@@ -57,17 +57,20 @@ class KMeans:
         return model_inertia
 
     def predict(self, X):
-        pass
+        return self.assign_clusters(X, self.centroids)
 
     def fit_predict(self, X):
-        pass
+        self.fit(X)
+        return self.predict(X)
 
-    def kmeans_plus_plus(self, X):
-        pass
-
-    def init_centroids(self, X):
+    def _init_centroids(self, X):
         if self.init == "random":
             random_indices = np.random.choice(
                 len(X), size=self.n_cluster, replace=False
-            )
+            ) 
             return X[random_indices]
+        
+    def _kmeans_plus_plus(self, X):
+        pass
+
+    
