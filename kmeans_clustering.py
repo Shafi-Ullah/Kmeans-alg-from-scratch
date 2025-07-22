@@ -13,12 +13,12 @@ class KMeans:
 
     def fit(self, X):
         for i in range(self.n_init):
-            centroids = self.init_centroids(X)
+            centroids = self._init_centroids(X)
             for _ in range(self.max_iter):
 
-                cluster_group = self.assign_clusters(X, centroids)
+                cluster_group = self._assign_clusters(X, centroids)
                 old_centroids = centroids.copy()
-                centroids = self.move_centroids(X, cluster_group)
+                centroids = self._move_centroids(X, cluster_group)
 
                 if (centroids == old_centroids).all():
                     break
@@ -57,7 +57,7 @@ class KMeans:
         return model_inertia
 
     def predict(self, X):
-        return self.assign_clusters(X, self.centroids)
+        return self._assign_clusters(X, self.centroids)
 
     def fit_predict(self, X):
         self.fit(X)
@@ -67,10 +67,10 @@ class KMeans:
         if self.init == "random":
             random_indices = np.random.choice(
                 len(X), size=self.n_cluster, replace=False
-            ) 
+            )
             return X[random_indices]
-        
-    def _kmeans_plus_plus(self, X):
-        pass
 
-    
+    def _kmeans_plus_plus(self, X):
+        centroids = []
+        random_centoid = X[np.random.choice(len(X), size=1)]
+        print(random_centoid)
