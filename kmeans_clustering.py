@@ -21,8 +21,8 @@ class KMeans:
 
             if (self.centroids == old_centroids).all():
                 break
-        # print(old_centroids)
-        # print(self.inertia(X, cluster_group))
+        print(old_centroids)
+        print(self.inertia(X, cluster_group))
         return cluster_group
 
     def assign_clusters(self, X):
@@ -44,6 +44,15 @@ class KMeans:
         for type in cluster_type:
             new_centroids.append(X[cluster_group == type].mean(axis=0))
         return np.array(new_centroids)
+
+    def inertia(self, X, cluster_group):
+        cluster_type = np.unique(cluster_group)
+        model_inertia = 0
+        for type, centroid in zip(cluster_type, self.centroids):
+            for row in X[cluster_group == type]:
+                model_inertia += np.dot(row - centroid, row - centroid)
+
+        return model_inertia
 
     def predict(self, X):
         pass
