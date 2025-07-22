@@ -2,34 +2,36 @@ import numpy as np
 
 
 class KMeans:
-    def __init__(self, n_cluster=8, max_iter=300, init="random", n_init=10):
+    def __init__(self, n_cluster=8, max_iter=300, init="random", n_init=1):
 
         self.n_cluster = n_cluster
         self.max_iter = max_iter
         self.n_init = n_init
         self.init = init
         self.centroids = None
+        self.inertia_ = np.inf
 
     def fit(self, X):
-        self.centroids = self.init_centroids(X)
+        for i in range(self.n_init):
+            centroids = self.init_centroids(X)
+            for _ in range(self.max_iter):
 
-        for _ in range(self.max_iter):
+                cluster_group = self.assign_clusters(X, centroids)
+                old_centroids = centroids.copy()
+                centroids = self.move_centroids(X, cluster_group)
 
-            cluster_group = self.assign_clusters(X)
-            old_centroids = self.centroids.copy()
-            self.centroids = self.move_centroids(X, cluster_group)
+                if (centroids == old_centroids).all():
+                    break
+            inertia = self.inertia(X, cluster_group, centroids)
+            if inertia < self.inertia_:
+                self.inertia_ = inertia
+                self.centroids = centroids
 
-            if (self.centroids == old_centroids).all():
-                break
-        print(old_centroids)
-        print(self.inertia(X, cluster_group))
-        return cluster_group
-
-    def assign_clusters(self, X):
+    def assign_clusters(self, X, centroids):
         cluster_group = []
         distances = []
         for row in X:
-            for centroid in self.centroids:
+            for centroid in centroids:
                 distances.append(np.sqrt(np.dot(row - centroid, row - centroid)))
 
             index_pos = distances.index(min(distances))
@@ -45,10 +47,10 @@ class KMeans:
             new_centroids.append(X[cluster_group == type].mean(axis=0))
         return np.array(new_centroids)
 
-    def inertia(self, X, cluster_group):
+    def inertia(self, X, cluster_group, centroids):
         cluster_type = np.unique(cluster_group)
         model_inertia = 0
-        for type, centroid in zip(cluster_type, self.centroids):
+        for type, centroid in zip(cluster_type, centroids):
             for row in X[cluster_group == type]:
                 model_inertia += np.dot(row - centroid, row - centroid)
 
