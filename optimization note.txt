@@ -1,0 +1,36 @@
+
+KMeans Optimization Note
+
+The main problem is that the runtime is extremely high compared to sklearn because of its nested loops and the method(np.dot) used for distance calculation.
+
+np.dot itself is fast because it is implemented in optimized C code.  
+However, using np.dot inside Python loops causes slowness due to loop overhead.  
+To speed up, use NumPy vectorized operations with broadcasting to avoid Python loops.
+
+
+1. Problem with loops:
+   - Python for-loops are slow, especially nested loops where distances are computed for each data point to every centroid.
+   - Example: 1000 points × 7 centroids = 7000 loops, which is time-consuming.
+
+2. Vectorization:
+   - NumPy's vectorized operations are highly optimized at the C level.
+   - Distances can be computed for all points and centroids simultaneously as a matrix.
+   - This eliminates the overhead of Python loops.
+
+3. How vectorization works:
+   - Using broadcasting: `X[:, np.newaxis] - centroids[np.newaxis, :]` creates an array of shape (n_samples, n_clusters, n_features).
+   - Compute norms/distances along axis=2.
+   - Assign clusters for all points at once.
+
+4. Result:
+   - The code runs much faster, especially on large datasets.
+   - Enables efficient clustering on big data.
+
+5. Other optimizations:
+   - Reduce number of iterations (max_iter).
+   - Use better initialization methods (k-means++).
+   - Handle empty clusters properly.
+
+Summary:  
+Replacing Python loops with NumPy vectorized math greatly improves speed and efficiency of KMeans implementation.
+
