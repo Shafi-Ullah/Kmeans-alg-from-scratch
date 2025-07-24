@@ -1,0 +1,44 @@
+This line does the following:
+
+```python
+distances = ((X[:, None, :] - centroids[None, :, :]) ** 2).sum(axis=2)
+```
+
+1. **`X[:, None, :]`**
+
+   * `X.shape` is `(n_samples, n_features)`
+   * `X[:, None, :]` reshapes it to `(n_samples, 1, n_features)`
+     → Adds a new axis for clusters, treating each sample as having one cluster dimension.
+
+2. **`centroids[None, :, :]`**
+
+   * `centroids.shape` is `(n_clusters, n_features)`
+   * `centroids[None, :, :]` reshapes it to `(1, n_clusters, n_features)`
+     → Adds a new axis for samples, treating each centroid as having one sample dimension.
+
+3. **Broadcasting and subtraction**
+
+   * Subtracting arrays of shape `(n_samples, 1, n_features)` and `(1, n_clusters, n_features)`
+   * NumPy broadcasts them to `(n_samples, n_clusters, n_features)`
+     → Computes feature-wise difference for each sample–centroid pair.
+
+4. **Square (`** 2`)**
+
+   * Squares each feature difference element-wise
+   * The shape remains `(n_samples, n_clusters, n_features)`.
+
+5. **Sum over axis 2**
+
+   * Sums squared differences across features (axis=2)
+   * Resulting shape is `(n_samples, n_clusters)`
+   * Entry `[i, j]` equals the sum of squared differences between sample `i` and centroid `j`.
+
+6. **`np.argmin(distances, axis=1)`**
+
+   * For each sample, finds the index of the centroid with the smallest distance
+   * Returns `cluster_group` array of shape `(n_samples,)`
+
+---
+
+**Final:**
+This efficiently assigns each sample to its nearest cluster in a fully vectorized manner.

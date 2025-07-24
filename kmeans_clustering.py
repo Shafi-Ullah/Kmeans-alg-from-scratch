@@ -33,7 +33,7 @@ class KMeans:
         self.inertia_path_.clear()
         self.centroids_path_.clear()
 
-    def fit(self, X):
+    def fit(self, X: np.array):
         """
         Compute k-means clustering.
 
@@ -72,19 +72,10 @@ class KMeans:
         Returns:
             np.ndarray: Array of cluster indices for each sample.
         """
-        cluster_group = []
+        distances = ((X[:, None, :] - centroids[None, :, :]) ** 2).sum(axis=2)
+        cluster_group = np.argmin(distances, axis=1)
 
-        for row in X:
-            distances = []
-            for centroid in centroids:
-
-                # distances.append(np.sqrt(np.dot(row - centroid, row - centroid))). distance**0.5 and distance don't effect clustering algorithm . because the distances between instances and there closet centroids ratio are same.
-                distances.append(np.dot(row - centroid, row - centroid))
-
-            index_pos = distances.index(min(distances))
-            cluster_group.append(index_pos)
-
-        return np.array(cluster_group)
+        return cluster_group
 
     def _move_centroids(self, X, cluster_group, old_centroids):
         """
@@ -103,7 +94,7 @@ class KMeans:
         for type in range(self.n_clusters):
             points = X[cluster_group == type]
             # Fallback: retain old centroid
-            #If a cluster has no points (an empty cluster), then the centroid of that cluster is kept at its previous position. So that the number of centroids(return value of this function) remains equal to the self.n_clusters.
+            # If a cluster has no points (an empty cluster), then the centroid of that cluster is kept at its previous position. So that the number of centroids(return value of this function) remains equal to the self.n_clusters.
 
             if len(points) == 0:
                 new_centroids.append(old_centroids[type])
@@ -126,14 +117,14 @@ class KMeans:
             float: Total inertia.
         """
 
-        model_inertia = 0
+        # differences: for each sample, subtract its assigned centroid
+        differences = X - centroids[cluster_group]
 
-        for i in range(self.n_clusters):
-            points = X[cluster_group == i]
-            centroid = centroids[i]
+        # squared_distances: compute squared distance from each sample to its centroid
+        squared_distances = np.sum(differences**2, axis=1)
 
-            for row in points:
-                model_inertia += np.dot(row - centroid, row - centroid)
+        # model_inertia: sum of all these distances
+        model_inertia = squared_distances.sum()
 
         return model_inertia
 
@@ -200,13 +191,15 @@ class KMeans:
         centroids = X[np.random.choice(n, size=1)]
 
         for _ in range(1, self.n_clusters):
-            distances = []
 
-            for row in X:
-                distances.append(min(np.dot(row - c, row - c) for c in centroids))
+            distances = ((X[:, None, :] - centroids[None, :, :]) ** 2).sum(axis=2)
 
-            total_distance = sum(distances)
-            probabilities = [d / total_distance for d in distances]
+            min_distance_index = np.argmin(distances, axis=1)
+
+            minimum_distance = distances[np.arange(len(distances)), min_distance_index]
+
+            total_distance = sum(minimum_distance)
+            probabilities = [d / total_distance for d in minimum_distance]
             new_centroid = X[np.random.choice(n, size=1, p=probabilities)]
             centroids = np.vstack([centroids, new_centroid])
 
